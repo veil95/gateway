@@ -1,7 +1,8 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 
-class ConnectionManager():
+
+class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[str, set[WebSocket]] = dict()
 
@@ -17,7 +18,6 @@ class ConnectionManager():
         self.active_connections[username].discard(websocket)
         if not self.active_connections[username]:
             self.active_connections.pop(username)
-
 
     async def send_to_user(self, receiver: str, data: dict) -> bool:
         connections = self.active_connections.get(receiver)
