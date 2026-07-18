@@ -1,8 +1,4 @@
-from typing import Dict
-from httpx import AsyncClient
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import HTMLResponse
-from services.ConnectionManager import ConnectionManager
+from fastapi import FastAPI
 from view.ws import router
 
 

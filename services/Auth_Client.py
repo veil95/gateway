@@ -1,5 +1,4 @@
 from typing import Dict
-from fastapi import Cookie
 from httpx import AsyncClient
 from model.Exceptions import AuthError
 

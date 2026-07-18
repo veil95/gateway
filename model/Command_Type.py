@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TypeCommand(str, Enum):
+class CommandType(str, Enum):
     SEND_MESSAGE = "send_message"
     TYPING = "typing"
     GET_CHAT_HISTORY = "get_chat_history"
