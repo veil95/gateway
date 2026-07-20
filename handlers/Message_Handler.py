@@ -1,6 +1,8 @@
 class MessageHandler:
-    def __init__(self):
-        pass
+    def __init__(self, connection_manager, message_client, chat_client):
+        self.connection_manager = connection_manager
+        self.message_client = message_client
+        self.chat_client = chat_client
 
     async def send_message(self, username: str, data: dict):
         pass

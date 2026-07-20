@@ -1,11 +1,11 @@
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect
-from services.ConnectionManager import ConnectionManager
-from services.Auth_Client import get_current_user
+from Clients.Auth_Client import get_current_user
 from model.Exceptions import AuthError
+from dependencies import connection_manager, dispatcher
+
 
 router = APIRouter(tags=["webscokets"])
 
-connectionmanager = ConnectionManager()
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -20,14 +20,14 @@ async def websocket_endpoint(websocket: WebSocket):
         return
     username = user.get("username")
     await websocket.accept()
-    connectionmanager.connect(username=username, websocket=websocket)
+    connection_manager.connect(username=username, websocket=websocket)
     while True:
         try:
             data = await websocket.receive_json()
         except WebSocketDisconnect:
-            connectionmanager.disconnect(username, websocket)
+            connection_manager.disconnect(username, websocket)
             return
-        await websocket.send_json(data)
+        await dispatcher.handle(username, data)
 
 
     

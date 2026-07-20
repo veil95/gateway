@@ -12,3 +12,4 @@ class CommandType(str, Enum):
     LEAVE_CHAT = "leave_chat"
     MARK_AS_READ = "mark_as_read"
     PING = "ping"
+    KICK_USER_FROM_CHAT = "kick_user_from_chat"
