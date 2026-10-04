@@ -1,21 +1,16 @@
-from model.Command_Type import CommandType
-from model.Exceptions import UnknownCommand
-from handlers.Chat_Handler import ChatHandler
-from handlers.User_Handler import UserHandler
-from handlers.Message_Handler import MessageHandler
+from model.command_type import CommandType
+from errors import UnknownCommand
+from handlers.chat_handler import ChatHandler
+from handlers.user_handler import UserHandler
+from handlers.message_handler import MessageHandler
+from clients.chat_client import ChatClient
 
 
 class Dispatcher:
-    def __init__(self, connection_manager, message_client, chat_client):
-        self.message_handler = MessageHandler(connection_manager=connection_manager,
-                                              message_client=message_client,
-                                              chat_client=chat_client)
-        self.user_handler = UserHandler(connection_manager=connection_manager,
-                                        message_client=message_client,
-                                        chat_client=chat_client)
-        self.chat_handler = ChatHandler(connection_manager=connection_manager,
-                                        message_client=message_client,
-                                        chat_client=chat_client)
+    def __init__(self, connection_manager):
+        self.message_handler = MessageHandler(connection_manager=connection_manager)
+        self.user_handler = UserHandler(connection_manager=connection_manager)
+        self.chat_handler = ChatHandler(connection_manager=connection_manager)
 
         self.commands = {
             CommandType.SEND_MESSAGE: self.message_handler.send_message,
@@ -30,11 +25,10 @@ class Dispatcher:
             CommandType.TYPING: self.user_handler.typing,
         }
 
-    async def handle(self, username: str, data: dict):
+    async def handle(self, user_id: str, data: dict, chat_client: ChatClient):
         command = data.get("type")
         if command is None:
             raise UnknownCommand()
-
         try:
             command = CommandType(command)
         except ValueError:
@@ -43,5 +37,4 @@ class Dispatcher:
         handler = self.commands.get(command)
         if handler is None:
             raise UnknownCommand()
-
-        await handler(username, data)
+        await handler(user_id, data, chat_client)

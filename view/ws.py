@@ -1,33 +1,31 @@
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect
-from Clients.Auth_Client import get_current_user
-from model.Exceptions import AuthError
-from dependencies import connection_manager, dispatcher
+from errors import AuthServiceUnavailable
+from dependencies import AuthClientDep
 
-
-router = APIRouter(tags=["webscokets"])
+router = APIRouter(tags=["websockets"])
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep):
     token = websocket.cookies.get("access_token")
     if not token:
         await websocket.close(code=1008)
         return
     try:
-        user = await get_current_user(token)
-    except AuthError:
+        user = await auth_service.get_current_user(token)
+    except AuthServiceUnavailable:
         await websocket.close(code=1008)
         return
-    username = user.get("username")
+    user_id = user.get("user_id")
     await websocket.accept()
-    connection_manager.connect(username=username, websocket=websocket)
+    connection_manager.connect(user_id=user_id, websocket=websocket)
     while True:
         try:
             data = await websocket.receive_json()
         except WebSocketDisconnect:
-            connection_manager.disconnect(username, websocket)
+            connection_manager.disconnect(user_id, websocket)
             return
-        await dispatcher.handle(username, data)
+        await dispatcher.handle(user_id, data)
 
 
     

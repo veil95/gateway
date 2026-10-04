@@ -6,18 +6,18 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[str, set[WebSocket]] = dict()
 
-    def connect(self, username: str, websocket: WebSocket):
-        if username not in self.active_connections:
-            self.active_connections[username] = {websocket}
+    def connect(self, user_id: str, websocket: WebSocket):
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = {websocket}
         else:
-            self.active_connections[username].add(websocket)
+            self.active_connections[user_id].add(websocket)
 
-    def disconnect(self, username: str, websocket: WebSocket):
-        if username not in self.active_connections:
+    def disconnect(self, user_id: str, websocket: WebSocket):
+        if user_id not in self.active_connections:
             return
-        self.active_connections[username].discard(websocket)
-        if not self.active_connections[username]:
-            self.active_connections.pop(username)
+        self.active_connections[user_id].discard(websocket)
+        if not self.active_connections[user_id]:
+            self.active_connections.pop(user_id)
 
     async def send_to_user(self, receiver: str, data: dict) -> bool:
         connections = self.active_connections.get(receiver)
