@@ -1,5 +1,5 @@
 import httpx
-from errors import ChatServiceUnavailable
+from errors import ChatServiceUnavailable, NotInChat
 
 class ChatClient:
     def __init__(self, http: httpx.AsyncClient):
@@ -24,5 +24,23 @@ class ChatClient:
         except httpx.RequestError:
             raise ChatServiceUnavailable("Chat service is unavailable")
 
-    async def save_message(self):
-        pass
+    async def save_message(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="POST",
+            url="/api/messages/",
+            json={
+                "user_id": user_id,
+                "chat_id": payload.get("chat_id"),
+                "reply_to_message_id": payload.get("reply_to_message_id"),
+                "data_type": "TextOrAttachments",
+                "body": payload.get("body"),
+            })
+
+        if response.status_code == 403:
+            raise NotInChat
+        if response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
+
+

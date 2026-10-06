@@ -3,7 +3,7 @@ import json
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect
 from errors import AuthServiceUnavailable,InvalidToken, UserNotFoundAuthService, CommandError, FatalError
 from dependencies import AuthClientDep, ConnectionManagerDep, DispatcherDep, ChatClientDep
-from schemas.events import ErrorResponse, ProtocolError, ErrorBody
+from schemas.events import ErrorResponse, ProtocolError, ErrorBody, Response
 
 router = APIRouter(tags=["websockets"])
 
@@ -27,7 +27,11 @@ async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep, 
         while True:
             try:
                 data = await websocket.receive_json()
-                response = dispatcher.handle(user_id, data, chat_client)
+                result = await dispatcher.handle(user_id, data, chat_client)
+                if result:
+                    response = Response(type=result["type"], request_id=data.get("request_id"),
+                                        payload=result["payload"])
+                    await websocket.send_json(response.model_dump(mode="json"))
             except (json.JSONDecodeError, ValueError):
                 error = ProtocolError(
                     error=ErrorBody(code="invalid_json", message="invalid json, value error or jsondecodeerror")

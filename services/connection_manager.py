@@ -19,14 +19,21 @@ class ConnectionManager:
         if not self.active_connections[user_id]:
             self.active_connections.pop(user_id)
 
-    async def send_to_user(self, receiver: str, data: dict) -> bool:
-        connections = self.active_connections.get(receiver)
+    async def _send_to_one(self, user_id: str, data: dict) -> str | None:
+        connections = self.active_connections.get(user_id)
         if not connections:
-            return False
+            return user_id
         for websocket in connections.copy():
             try:
                 await websocket.send_json(data)
             except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
-                self.disconnect(receiver, websocket)
-        return True
+                self.disconnect(user_id, websocket)
+        return None
 
+    async def send_to_users(self, user_ids: list[str], data: dict):
+        offline_users = set()
+        for user in user_ids:
+            user_id = await self._send_to_one(user_id=user, data=data)
+            if user_id:
+                offline_users.add(user_id)
+        return offline_users
