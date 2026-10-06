@@ -23,8 +23,8 @@ def get_dispatcher(request: Request) -> Dispatcher:
     return request.app.state.dispatcher
 
 
-ChatClientDep = Annotated[ChatClient, Depends(get_chat_service)]
-AuthClientDep = Annotated[AuthClient, Depends(get_auth_service)]
+ChatClientDep = Annotated[ChatClient, Depends(get_chat_client)]
+AuthClientDep = Annotated[AuthClient, Depends(get_auth_client)]
 
 ConnectionManagerDep = Annotated[ConnectionManager, Depends(get_connection_manager)]
 

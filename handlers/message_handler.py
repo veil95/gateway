@@ -5,7 +5,7 @@ class MessageHandler:
     def __init__(self, connection_manager):
         self.connection_manager = connection_manager
 
-    async def send_message(self, username: str, data: dict, chat_client: ChatClient):
+    async def send_message(self, user_id: str, payload: dict, chat_client: ChatClient):
         ...
 
     async def edit_message(self, username: str, data: dict, chat_client: ChatClient):

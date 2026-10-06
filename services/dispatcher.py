@@ -4,7 +4,7 @@ from handlers.chat_handler import ChatHandler
 from handlers.user_handler import UserHandler
 from handlers.message_handler import MessageHandler
 from clients.chat_client import ChatClient
-
+from schemas.events import ErrorResponse
 
 class Dispatcher:
     def __init__(self, connection_manager):
@@ -33,7 +33,6 @@ class Dispatcher:
             command = CommandType(command)
         except ValueError:
             raise UnknownCommand()
-
         handler = self.commands.get(command)
         if handler is None:
             raise UnknownCommand()

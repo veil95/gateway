@@ -11,18 +11,22 @@ class CommandError(GatewayError):
 
 
 class InvalidTicket(FatalError):
+    code = "invalid_ticket"
     close_code = 1008
 
 
 class InvalidToken(FatalError):
+    code = "invalid_token"
     close_code = 1008
 
 
 class AuthServiceUnavailable(FatalError):
+    code = "auth_service_unavailable"
     close_code = 1013
 
 
 class UserNotFoundAuthService(FatalError):
+    code = "user_not_found_auth_service"
     close_code = 1008
 
 
