@@ -1,4 +1,4 @@
-from model.command_type import CommandType
+from schemas.command_type import CommandType
 from errors import UnknownCommand
 from handlers.chat_handler import ChatHandler
 from handlers.user_handler import UserHandler

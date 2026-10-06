@@ -18,7 +18,7 @@ async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep):
         return
     user_id = user.get("user_id")
     await websocket.accept()
-    connection_manager.connect(user_id=user_id, websocket=websocket)
+    connection_manager.connect(usser_id=user_id, websocket=websocket)
     while True:
         try:
             data = await websocket.receive_json()
