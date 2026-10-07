@@ -34,7 +34,7 @@ async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep, 
                     await websocket.send_json(response.model_dump(mode="json"))
             except (json.JSONDecodeError, ValueError):
                 error = ProtocolError(
-                    error=ErrorBody(code="invalid_json", message="invalid json, value error or jsondecodeerror")
+                    error=ErrorBody(code="invalid_json", message="invalid json, value error or jsondecodeerror lox")
                 )
                 await websocket.send_json(error.model_dump(mode="json"))
                 continue

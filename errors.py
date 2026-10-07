@@ -30,6 +30,14 @@ class UserNotFoundAuthService(FatalError):
     close_code = 1008
 
 
+class NotAuthor(CommandError):
+    code = "user_not_author"
+
+
+class MessageNotFound(CommandError):
+    code = "message_not_found"
+
+
 class UnknownCommand(CommandError):
     code = "unknown_command"
 

@@ -6,6 +6,7 @@ from handlers.message_handler import MessageHandler
 from clients.chat_client import ChatClient
 from schemas.events import ErrorResponse
 
+
 class Dispatcher:
     def __init__(self, connection_manager):
         self.message_handler = MessageHandler(connection_manager=connection_manager)

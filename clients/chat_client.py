@@ -1,5 +1,6 @@
 import httpx
-from errors import ChatServiceUnavailable, NotInChat
+from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor
+
 
 class ChatClient:
     def __init__(self, http: httpx.AsyncClient):
@@ -43,4 +44,39 @@ class ChatClient:
         else:
             raise ChatServiceUnavailable
 
+    async def delete_message(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="DELETE",
+            url=f"/api/messages/{payload.get("message_id")}",
+            params={
+                "user_id": user_id
+            })
+        if response.status_code == 404:
+            raise MessageNotFound
+        elif response.status_code == 403:
+            raise NotAuthor
+        elif response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
+
+    async def edit_message(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="PATCH",
+            url=f"/api/messages/{payload.get("message_id")}",
+            params={
+                "user_id": user_id
+            },
+            json={
+                "body": payload.get("body")
+            }
+        )
+        if response.status_code == 404:
+            raise MessageNotFound
+        elif response.status_code == 403:
+            raise NotAuthor
+        elif response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
 
