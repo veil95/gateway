@@ -1,11 +1,14 @@
+from pydantic import ValidationError
+
 from schemas.command_type import CommandType
-from errors import UnknownCommand
+from errors import UnknownCommand, InvalidPayload
 from handlers.chat_handler import ChatHandler
 from handlers.user_handler import UserHandler
 from handlers.message_handler import MessageHandler
 from clients.chat_client import ChatClient
 from schemas.events import ErrorResponse
-
+from schemas.commands import PAYLOAD_SCHEMAS
+from schemas.commands import Envelope
 
 class Dispatcher:
     def __init__(self, connection_manager):
@@ -26,15 +29,21 @@ class Dispatcher:
             CommandType.TYPING: self.user_handler.typing,
         }
 
-    async def handle(self, user_id: str, data: dict, chat_client: ChatClient):
-        command = data.get("type")
-        if command is None:
-            raise UnknownCommand()
+    async def handle(self, user_id: str, envelope: Envelope, chat_client: ChatClient):
+        command = envelope.type
         try:
             command = CommandType(command)
         except ValueError:
             raise UnknownCommand()
+        try:
+            schema = PAYLOAD_SCHEMAS[command]
+        except KeyError:
+            raise UnknownCommand
+        try:
+            payload = schema(**envelope.payload)
+        except ValidationError as e:
+            raise InvalidPayload
         handler = self.commands.get(command)
         if handler is None:
             raise UnknownCommand()
-        await handler(user_id, data, chat_client)
+        return await handler(user_id=user_id, payload=payload.model_dump(), chat_client=chat_client)
