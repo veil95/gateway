@@ -24,6 +24,7 @@ class ProtocolError(BaseModel):
     type: str = "protocol_error"
     error: ErrorBody
 
+
 class Event(BaseModel):
     type: str
     payload: dict

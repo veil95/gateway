@@ -9,13 +9,20 @@ from clients.chat_client import ChatClient
 from schemas.events import ErrorResponse
 from schemas.commands import PAYLOAD_SCHEMAS
 from schemas.commands import Envelope
+from services.chat_broadcaster import Broadcast
+
 
 class Dispatcher:
-    def __init__(self, connection_manager):
-        self.message_handler = MessageHandler(connection_manager=connection_manager)
-        self.user_handler = UserHandler(connection_manager=connection_manager)
-        self.chat_handler = ChatHandler(connection_manager=connection_manager)
-
+    def __init__(self, connection_manager, chat_client, broadcaster):
+        self.message_handler = MessageHandler(connection_manager=connection_manager,
+                                              chat_client=chat_client,
+                                              broadcaster=broadcaster)
+        self.user_handler = UserHandler(connection_manager=connection_manager,
+                                        chat_client=chat_client,
+                                        broadcaster=broadcaster)
+        self.chat_handler = ChatHandler(connection_manager=connection_manager,
+                                        chat_client=chat_client,
+                                        broadcaster=broadcaster)
         self.commands = {
             CommandType.SEND_MESSAGE: self.message_handler.send_message,
             CommandType.EDIT_MESSAGE: self.message_handler.edit_message,
@@ -29,7 +36,7 @@ class Dispatcher:
             CommandType.TYPING: self.user_handler.typing,
         }
 
-    async def handle(self, user_id: str, envelope: Envelope, chat_client: ChatClient):
+    async def handle(self, user_id: str, envelope: Envelope):
         command = envelope.type
         try:
             command = CommandType(command)
@@ -41,9 +48,9 @@ class Dispatcher:
             raise UnknownCommand
         try:
             payload = schema(**envelope.payload)
-        except ValidationError as e:
+        except ValidationError:
             raise InvalidPayload
         handler = self.commands.get(command)
         if handler is None:
             raise UnknownCommand()
-        return await handler(user_id=user_id, payload=payload.model_dump(), chat_client=chat_client)
+        return await handler(user_id=user_id, payload=payload.model_dump())

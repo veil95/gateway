@@ -1,5 +1,5 @@
 import httpx
-from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor
+from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound
 
 
 class ChatClient:
@@ -29,8 +29,10 @@ class ChatClient:
         response = await self._make_request(
             method="POST",
             url="/api/messages/",
+            headers={
+                "X-User-Id": user_id
+            },
             json={
-                "user_id": user_id,
                 "chat_id": payload.get("chat_id"),
                 "reply_to_message_id": payload.get("reply_to_message_id"),
                 "data_type": "TextOrAttachments",
@@ -39,7 +41,7 @@ class ChatClient:
 
         if response.status_code == 403:
             raise NotInChat
-        if response.is_success:
+        elif response.is_success:
             return response.json()
         else:
             raise ChatServiceUnavailable
@@ -48,8 +50,8 @@ class ChatClient:
         response = await self._make_request(
             method="DELETE",
             url=f"/api/messages/{payload.get("message_id")}",
-            params={
-                "user_id": user_id
+            headers={
+                "X-User-Id": user_id
             })
         if response.status_code == 404:
             raise MessageNotFound
@@ -64,8 +66,8 @@ class ChatClient:
         response = await self._make_request(
             method="PATCH",
             url=f"/api/messages/{payload.get("message_id")}",
-            params={
-                "user_id": user_id
+            headers={
+                "X-User-Id": user_id
             },
             json={
                 "body": payload.get("body")
@@ -80,3 +82,14 @@ class ChatClient:
         else:
             raise ChatServiceUnavailable
 
+    async def get_chat_members(self, chat_id: int):
+        response = await self._make_request(
+            method="GET",
+            url=f"/api/chats/{chat_id}/members",
+        )
+        if response.status_code == 404:
+            raise ChatNotFound
+        if response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable

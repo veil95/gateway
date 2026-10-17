@@ -4,7 +4,7 @@ from fastapi import WebSocket, APIRouter, WebSocketDisconnect
 from pydantic import ValidationError
 
 from errors import AuthServiceUnavailable,InvalidToken, UserNotFoundAuthService, CommandError, FatalError
-from dependencies import AuthClientDep, ConnectionManagerDep, DispatcherDep, ChatClientDep
+from dependencies import AuthClientDep, ConnectionManagerDep, DispatcherDep
 from schemas.events import ErrorResponse, ProtocolError, ErrorBody, Response
 from schemas.commands import Envelope
 
@@ -13,7 +13,7 @@ router = APIRouter(tags=["websockets"])
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep, connection_manager: ConnectionManagerDep,
-                             dispatcher: DispatcherDep, chat_client: ChatClientDep):
+                             dispatcher: DispatcherDep):
     token = websocket.query_params.get("access_token")
     await websocket.accept()
     if not token:
@@ -31,7 +31,7 @@ async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep, 
             try:
                 data = await websocket.receive_json()
                 envelope = Envelope(**data)
-                result = await dispatcher.handle(user_id, envelope, chat_client)
+                result = await dispatcher.handle(user_id, envelope)
                 if result:
                     response = Response(type=result["type"], request_id=envelope.request_id,
                                         payload=result["payload"])
