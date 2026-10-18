@@ -32,7 +32,7 @@ async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep, 
                 data = await websocket.receive_json()
                 envelope = Envelope(**data)
                 result = await dispatcher.handle(user_id, envelope)
-                if result:
+                if result is not None:
                     response = Response(type=result["type"], request_id=envelope.request_id,
                                         payload=result["payload"])
                     await websocket.send_json(response.model_dump(mode="json"))
