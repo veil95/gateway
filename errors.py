@@ -49,8 +49,10 @@ class InvalidPayload(CommandError):
 class ChatServiceUnavailable(CommandError):
     code = "chat_service_unavailable"
 
+
 class ChatNotFound(CommandError):
     code = "chat_not_found"
+
 
 class UserNotFound(CommandError):
     code = "user_not_found"

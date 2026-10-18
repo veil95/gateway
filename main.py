@@ -8,6 +8,12 @@ from config import chat_service_url, auth_service_url
 from services.dispatcher import Dispatcher
 from services.connection_manager import ConnectionManager
 from services.chat_broadcaster import Broadcast
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s | %(message)s"
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,6 +35,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)
+
 
 
 @app.get("/")

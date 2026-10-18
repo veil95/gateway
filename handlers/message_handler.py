@@ -12,18 +12,17 @@ class MessageHandler:
 
     async def send_message(self, user_id: str, payload: dict):
         response = await self.chat_client.save_message(user_id=user_id, payload=payload)
-        recipients = [uid for uid in response["members"] if uid != user_id]
-        message = response["message"]
-
+        message = response
         event = Event(type="message_created", payload=message) # ивент для фронта что сообщение создано и само сообщение собсна
-
-        offline_users = await self.connection_manager.send_to_users(user_ids=recipients,
-                                                                    data=event.model_dump(mode="json")) # для push уведов в будущем(offline_users)
+        # для push уведов в будущем(offline_users)
+        offline_users = await self.broadcaster.broadcast_exclude_author(user_id=user_id,
+                                                                        event=event,
+                                                                        chat_id=response["chat_id"])
         return {"type": "message_sent", "payload": message}
 
     async def edit_message(self, user_id: str, payload: dict):
         response = await self.chat_client.edit_message(user_id=user_id, payload=payload)
-        message = response["message"]
+        message = response
         event = Event(type="message_edit", payload=message)
         await self.broadcaster.broadcast_exclude_author(user_id=user_id, event=event, chat_id=response["chat_id"])
         return {"type": "message_edit_confirmed", "payload": message}
@@ -34,8 +33,10 @@ class MessageHandler:
             "message_id": response["message_id"],
             "chat_id": response["chat_id"]
         }
-        recipients = [uid for uid in response["members"] if uid != user_id]
         event = Event(type="message_deleted", payload=message_for_front)
-        offline_users = await self.connection_manager.send_to_users(user_ids=recipients,
-                                                                    data=event.model_dump(mode="json")) # отправка того что сообщения удалено всем юзерам чата
+        # отправка того что сообщения удалено всем юзерам чата
+
+        offline_users = await self.broadcaster.broadcast_exclude_author(user_id=user_id,
+                                                                        event=event,
+                                                                        chat_id=response["chat_id"])
         return {"type": "message_deleted_confirmed", "payload": message_for_front}
