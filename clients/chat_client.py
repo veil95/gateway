@@ -1,5 +1,5 @@
 import httpx
-from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound
+from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound, PermisionDenied
 
 
 class ChatClient:
@@ -56,7 +56,7 @@ class ChatClient:
         if response.status_code == 404:
             raise MessageNotFound
         elif response.status_code == 403:
-            raise NotAuthor
+            raise PermisionDenied
         elif response.is_success:
             return response.json()
         else:

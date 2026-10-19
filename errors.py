@@ -60,3 +60,7 @@ class UserNotFound(CommandError):
 
 class NotInChat(CommandError):
     code = "user_not_in_chat"
+
+
+class PermisionDenied(CommandError):
+    code = "permision_denied"

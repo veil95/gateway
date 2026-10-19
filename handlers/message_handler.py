@@ -18,14 +18,14 @@ class MessageHandler:
         offline_users = await self.broadcaster.broadcast_exclude_author(user_id=user_id,
                                                                         event=event,
                                                                         chat_id=response["chat_id"])
-        return {"type": "message_sent", "payload": message}
+        return {"type": "message_sent_confirmed", "payload": message}
 
     async def edit_message(self, user_id: str, payload: dict):
         response = await self.chat_client.edit_message(user_id=user_id, payload=payload)
         message = response
-        event = Event(type="message_edit", payload=message)
+        event = Event(type="message_edited", payload=message)
         await self.broadcaster.broadcast_exclude_author(user_id=user_id, event=event, chat_id=response["chat_id"])
-        return {"type": "message_edit_confirmed", "payload": message}
+        return {"type": "message_edited_confirmed", "payload": message}
 
     async def delete_message(self, user_id: str, payload: dict):
         response = await self.chat_client.delete_message(user_id=user_id, payload=payload)
