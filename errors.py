@@ -62,5 +62,9 @@ class NotInChat(CommandError):
     code = "user_not_in_chat"
 
 
-class PermisionDenied(CommandError):
-    code = "permision_denied"
+class InternalError(CommandError):
+    code = "internal_error"
+
+
+class PermissionDenied(CommandError):
+    code = "permission_denied"

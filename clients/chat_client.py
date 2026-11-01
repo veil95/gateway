@@ -1,5 +1,10 @@
 import httpx
-from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound, PermisionDenied
+from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound, PermissionDenied
+from errors import InternalError, UserNotFound
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChatClient:
@@ -56,7 +61,7 @@ class ChatClient:
         if response.status_code == 404:
             raise MessageNotFound
         elif response.status_code == 403:
-            raise PermisionDenied
+            raise PermissionDenied
         elif response.is_success:
             return response.json()
         else:
@@ -89,6 +94,30 @@ class ChatClient:
         )
         if response.status_code == 404:
             raise ChatNotFound
+        if response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
+
+    async def create_chat(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="POST",
+            url="/api/chats",
+            headers={
+                "X-User-Id": user_id
+            },
+            json={
+                "type": payload.get("type"),
+                "title": payload.get("title"),
+                "pfp_media_url": payload.get("pfp_media_url"),
+                "members": payload.get("members")
+            }
+        )
+        if response.status_code == 422:
+            logger.error("рассогласование в схемах между chat_service и gateway, %s", response.text)
+            raise InternalError
+        if response.status_code == 400:
+            raise UserNotFound
         if response.is_success:
             return response.json()
         else:

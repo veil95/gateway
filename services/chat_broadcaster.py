@@ -45,3 +45,13 @@ class Broadcast:
         except Exception:
             logger.exception("Непредвиденная ошибка для chat_id %s", chat_id)
         return set()
+
+    async def broadcast_to_members(self, user_id: str, event: Event, members: list[str]):
+        try:
+            recipients = [uid for uid in members if uid != user_id]
+            offline_users = await self.connection_manager.send_to_users(user_ids=recipients,
+                                                                        data=event.model_dump(mode="json"))
+            return offline_users
+        except Exception:
+            logger.exception("непредвиденная ошибка, при рассылке события %s", event.type)
+        return set()

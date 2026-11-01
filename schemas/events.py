@@ -28,3 +28,4 @@ class ProtocolError(BaseModel):
 class Event(BaseModel):
     type: str
     payload: dict
+

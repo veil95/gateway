@@ -53,4 +53,4 @@ class Dispatcher:
         handler = self.commands.get(command)
         if handler is None:
             raise UnknownCommand()
-        return await handler(user_id=user_id, payload=payload.model_dump())
+        return await handler(user_id=user_id, payload=payload.model_dump(mode="json"))
