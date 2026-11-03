@@ -5,7 +5,7 @@ from services.connection_manager import ConnectionManager
 from clients.auth_client import AuthClient
 from clients.chat_client import ChatClient
 from services.dispatcher import Dispatcher
-from services.chat_broadcaster import Broadcast
+from services.ticket_store import TicketStore
 
 
 def get_auth_client(request: Request) -> AuthClient:
@@ -20,7 +20,11 @@ def get_dispatcher(request: Request) -> Dispatcher:
     return request.app.state.dispatcher
 
 
+def get_redis(request: Request) -> TicketStore:
+    return request.app.state.redis
+
+
 AuthClientDep = Annotated[AuthClient, Depends(get_auth_client)]
 ConnectionManagerDep = Annotated[ConnectionManager, Depends(get_connection_manager)]
-
+TicketStoreDep = Annotated[TicketStore, Depends(get_redis)]
 DispatcherDep = Annotated[Dispatcher, Depends(get_dispatcher)]
