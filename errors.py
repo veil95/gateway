@@ -30,6 +30,14 @@ class UserNotFoundAuthService(FatalError):
     close_code = 1008
 
 
+class NotAuthor(CommandError):
+    code = "user_not_author"
+
+
+class MessageNotFound(CommandError):
+    code = "message_not_found"
+
+
 class UnknownCommand(CommandError):
     code = "unknown_command"
 
@@ -42,9 +50,21 @@ class ChatServiceUnavailable(CommandError):
     code = "chat_service_unavailable"
 
 
+class ChatNotFound(CommandError):
+    code = "chat_not_found"
+
+
 class UserNotFound(CommandError):
     code = "user_not_found"
 
 
 class NotInChat(CommandError):
     code = "user_not_in_chat"
+
+
+class InternalError(CommandError):
+    code = "internal_error"
+
+
+class PermissionDenied(CommandError):
+    code = "permission_denied"

@@ -1,5 +1,11 @@
 import httpx
-from errors import ChatServiceUnavailable, NotInChat
+from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound, PermissionDenied
+from errors import InternalError, UserNotFound
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 class ChatClient:
     def __init__(self, http: httpx.AsyncClient):
@@ -28,8 +34,10 @@ class ChatClient:
         response = await self._make_request(
             method="POST",
             url="/api/messages/",
+            headers={
+                "X-User-Id": user_id
+            },
             json={
-                "user_id": user_id,
                 "chat_id": payload.get("chat_id"),
                 "reply_to_message_id": payload.get("reply_to_message_id"),
                 "data_type": "TextOrAttachments",
@@ -38,9 +46,79 @@ class ChatClient:
 
         if response.status_code == 403:
             raise NotInChat
+        elif response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
+
+    async def delete_message(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="DELETE",
+            url=f"/api/messages/{payload.get("message_id")}",
+            headers={
+                "X-User-Id": user_id
+            })
+        if response.status_code == 404:
+            raise MessageNotFound
+        elif response.status_code == 403:
+            raise PermissionDenied
+        elif response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
+
+    async def edit_message(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="PATCH",
+            url=f"/api/messages/{payload.get("message_id")}",
+            headers={
+                "X-User-Id": user_id
+            },
+            json={
+                "body": payload.get("body")
+            }
+        )
+        if response.status_code == 404:
+            raise MessageNotFound
+        elif response.status_code == 403:
+            raise NotAuthor
+        elif response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
+
+    async def get_chat_members(self, chat_id: int):
+        response = await self._make_request(
+            method="GET",
+            url=f"/api/chats/{chat_id}/members",
+        )
+        if response.status_code == 404:
+            raise ChatNotFound
         if response.is_success:
             return response.json()
         else:
             raise ChatServiceUnavailable
 
-
+    async def create_chat(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="POST",
+            url="/api/chats",
+            headers={
+                "X-User-Id": user_id
+            },
+            json={
+                "type": payload.get("type"),
+                "title": payload.get("title"),
+                "pfp_media_url": payload.get("pfp_media_url"),
+                "members": payload.get("members")
+            }
+        )
+        if response.status_code == 422:
+            logger.error("рассогласование в схемах между chat_service и gateway, %s", response.text)
+            raise InternalError
+        if response.status_code == 400:
+            raise UserNotFound
+        if response.is_success:
+            return response.json()
+        else:
+            raise ChatServiceUnavailable
