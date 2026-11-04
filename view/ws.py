@@ -1,10 +1,8 @@
 import json
-
 from fastapi import WebSocket, APIRouter, WebSocketDisconnect
 from pydantic import ValidationError
-
-from errors import AuthServiceUnavailable,InvalidToken, UserNotFoundAuthService, CommandError, FatalError
-from dependencies import AuthClientDep, ConnectionManagerDep, DispatcherDep
+from errors import CommandError, FatalError, InvalidTicket, TicketStoreUnavailable
+from dependencies import ConnectionManagerDep, DispatcherDep, TicketStoreDep
 from schemas.events import ErrorResponse, ProtocolError, ErrorBody, Response
 from schemas.commands import Envelope
 
@@ -12,19 +10,21 @@ router = APIRouter(tags=["websockets"])
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket, auth_service: AuthClientDep, connection_manager: ConnectionManagerDep,
-                             dispatcher: DispatcherDep):
-    token = websocket.query_params.get("access_token")
+async def websocket_endpoint(websocket: WebSocket, connection_manager: ConnectionManagerDep,
+                             dispatcher: DispatcherDep, ticket_store: TicketStoreDep):
+    ticket = websocket.query_params.get("ticket")
     await websocket.accept()
-    if not token:
-        await websocket.close(InvalidToken.close_code)
+    if not ticket:
+        await websocket.close(InvalidTicket.close_code)
         return
     try:
-        user = await auth_service.get_current_user(token)
-    except (AuthServiceUnavailable, InvalidToken, UserNotFoundAuthService) as exc:
+        user_id = await ticket_store.consume(ticket)
+    except TicketStoreUnavailable as exc:
         await websocket.close(exc.close_code)
         return
-    user_id = user.get("user_id")
+    if user_id is None:
+        await websocket.close(InvalidTicket.close_code)
+        return
     connection_manager.connect(user_id=user_id, websocket=websocket)
     try:
         while True:
