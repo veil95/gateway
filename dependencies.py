@@ -6,21 +6,21 @@ from services.connection_manager import ConnectionManager
 from clients.auth_client import AuthClient
 from services.dispatcher import Dispatcher
 from services.ticket_store import TicketStore
+from starlette.requests import HTTPConnection
 
-
-def get_auth_client(request: Request) -> AuthClient:
+def get_auth_client(request: HTTPConnection) -> AuthClient:
     return request.app.state.auth_client
 
 
-def get_connection_manager(request: Request) -> ConnectionManager:
+def get_connection_manager(request: HTTPConnection) -> ConnectionManager:
     return request.app.state.connection_manager
 
 
-def get_dispatcher(request: Request) -> Dispatcher:
+def get_dispatcher(request: HTTPConnection) -> Dispatcher:
     return request.app.state.dispatcher
 
 
-def get_ticket_store(request: Request) -> TicketStore:
+def get_ticket_store(request: HTTPConnection) -> TicketStore:
     return request.app.state.ticket_store
 
 

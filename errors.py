@@ -41,6 +41,11 @@ class UserNotFoundAuthService(FatalError):
     close_code = 1008
     http_status = 401
 
+
+class IncorrectCredential(CommandError):
+    code = "incorrect_login_or_password"
+
+
 class NotAuthor(CommandError):
     code = "user_not_author"
 
