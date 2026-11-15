@@ -5,10 +5,18 @@ from schemas.command_type import CommandType
 from pydantic import BaseModel, Field, model_validator, field_validator
 from schemas.command_type import ChatType
 from errors import InvalidPayload
+
+
 class Envelope(BaseModel):
     type: str
     request_id: str
     payload: dict
+
+
+class GetChatMessages(BaseModel):
+    chat_id: int
+    cursor: int | None = Field(default=None, ge=0)
+    per_page: int = Field(gt=0, le=10000, default=20)
 
 
 class SendMessagePayload(BaseModel):

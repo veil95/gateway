@@ -13,6 +13,7 @@ from services.chat_broadcaster import Broadcast
 from redis.asyncio import Redis
 import logging
 from services.ticket_store import TicketStore
+from view.chats import chat_router
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s | %(message)s"
@@ -47,7 +48,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(router)
 app.include_router(ticket_router)
 app.include_router(auth_router)
-
+app.include_router(chat_router)
 
 @app.get("/")
 async def get():

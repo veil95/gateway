@@ -7,6 +7,8 @@ from clients.auth_client import AuthClient
 from services.dispatcher import Dispatcher
 from services.ticket_store import TicketStore
 from starlette.requests import HTTPConnection
+from clients.chat_client import ChatClient
+
 
 def get_auth_client(request: HTTPConnection) -> AuthClient:
     return request.app.state.auth_client
@@ -24,9 +26,13 @@ def get_ticket_store(request: HTTPConnection) -> TicketStore:
     return request.app.state.ticket_store
 
 
+def get_chat_client(request: HTTPConnection) -> ChatClient:
+    return request.app.state.chat_client
+
+
 security = HTTPBearer()
 
-
+ChatClientDep = Annotated[ChatClient, Depends(get_chat_client)]
 AuthClientDep = Annotated[AuthClient, Depends(get_auth_client)]
 ConnectionManagerDep = Annotated[ConnectionManager, Depends(get_connection_manager)]
 TicketStoreDep = Annotated[TicketStore, Depends(get_ticket_store)]

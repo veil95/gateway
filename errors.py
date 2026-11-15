@@ -63,10 +63,12 @@ class InvalidPayload(CommandError):
 
 
 class ChatServiceUnavailable(CommandError):
+    http_status = 503
     code = "chat_service_unavailable"
 
 
 class ChatNotFound(CommandError):
+    http_status = 404
     code = "chat_not_found"
 
 
@@ -83,4 +85,5 @@ class InternalError(CommandError):
 
 
 class PermissionDenied(CommandError):
+    http_status = 403
     code = "permission_denied"

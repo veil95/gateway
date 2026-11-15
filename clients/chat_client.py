@@ -122,3 +122,25 @@ class ChatClient:
             return response.json()
         else:
             raise ChatServiceUnavailable
+
+    async def get_chat_messages(self, user_id: str, chat_id: int, cursor: int | None, per_page: int):
+        params = {"per_page": per_page}
+        if cursor is not None:
+            params["cursor"] = cursor
+
+        response = await self._make_request(
+            method="GET",
+            url=f"/api/chats/{chat_id}/messages",
+            headers={
+                "X-User-Id": user_id
+            },
+            params=params
+        )
+        if response.is_success:
+            return response.json()
+        if response.status_code == 404:
+            raise ChatNotFound
+        if response.status_code == 403:
+            raise PermissionDenied
+        else:
+            raise ChatServiceUnavailable
