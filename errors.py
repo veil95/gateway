@@ -9,7 +9,7 @@ class FatalError(GatewayError):
 
 
 class CommandError(GatewayError):
-    pass
+    http_status = 500
 
 
 class InvalidTicket(FatalError):
@@ -73,6 +73,7 @@ class ChatNotFound(CommandError):
 
 
 class UserNotFound(CommandError):
+    http_status = 404
     code = "user_not_found"
 
 

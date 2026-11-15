@@ -144,3 +144,41 @@ class ChatClient:
             raise PermissionDenied
         else:
             raise ChatServiceUnavailable
+
+    async def get_user_chats(self, user_id: str, cursor: int | None, per_page: int):
+        params = {"per_page": per_page}
+        if cursor is not None:
+            params["cursor"] = cursor
+
+        response = await self._make_request(
+            method="GET",
+            url=f"/api/users/{user_id}/chats",
+            params=params
+        )
+
+        if response.is_success:
+            return response.json()
+        if response.status_code == 404:
+            raise UserNotFound
+        else:
+            raise ChatServiceUnavailable
+
+    async def user_leave_chat(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="DELETE",
+            url=f"/api/chats/{payload["chat_id"]}/members/{user_id}/",
+            headers={
+                "X-User-Id": user_id
+            },
+            json={
+                "chat_id": payload["chat_id"]
+            }
+        )
+        if response.is_success:
+            return
+        if response.status_code == 404:
+            raise ChatNotFound
+        if response.status_code == 403:
+            raise NotInChat
+        else:
+            raise ChatServiceUnavailable
