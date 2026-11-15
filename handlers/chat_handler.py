@@ -26,4 +26,10 @@ class ChatHandler:
         pass
 
     async def leave_chat(self, user_id: str, payload: dict):
-        pass
+        response = await self.chat_client.user_leave_chat(user_id=user_id, payload=payload)
+        message = {"chat_id": payload["chat_id"], "user_id": user_id}
+        event = Event(type="user_left", payload=message)
+        offline_users = await self.broadcaster.broadcast_exclude_author(user_id=user_id,
+                                                                        event=event,
+                                                                        chat_id=payload["chat_id"])
+        return {"type": "user_left_confirmed", "payload": message}

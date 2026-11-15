@@ -3,31 +3,47 @@ class GatewayError(Exception):
 
 
 class FatalError(GatewayError):
-    pass
+    code = "internal_error"
+    close_code = 1011
+    http_status = 500
 
 
 class CommandError(GatewayError):
-    pass
+    http_status = 500
 
 
 class InvalidTicket(FatalError):
     code = "invalid_ticket"
     close_code = 1008
+    http_status = 401
 
 
 class InvalidToken(FatalError):
     code = "invalid_token"
     close_code = 1008
+    http_status = 401
 
 
 class AuthServiceUnavailable(FatalError):
     code = "auth_service_unavailable"
     close_code = 1013
+    http_status = 503
+
+
+class TicketStoreUnavailable(FatalError):
+    code = "ticket_store_unavailable"
+    close_code = 1013
+    http_status = 503
 
 
 class UserNotFoundAuthService(FatalError):
     code = "user_not_found_auth_service"
     close_code = 1008
+    http_status = 401
+
+
+class IncorrectCredential(CommandError):
+    code = "incorrect_login_or_password"
 
 
 class NotAuthor(CommandError):
@@ -47,14 +63,17 @@ class InvalidPayload(CommandError):
 
 
 class ChatServiceUnavailable(CommandError):
+    http_status = 503
     code = "chat_service_unavailable"
 
 
 class ChatNotFound(CommandError):
+    http_status = 404
     code = "chat_not_found"
 
 
 class UserNotFound(CommandError):
+    http_status = 404
     code = "user_not_found"
 
 
@@ -67,4 +86,5 @@ class InternalError(CommandError):
 
 
 class PermissionDenied(CommandError):
+    http_status = 403
     code = "permission_denied"
