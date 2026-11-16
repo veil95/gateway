@@ -46,6 +46,16 @@ class IncorrectCredential(CommandError):
     code = "incorrect_login_or_password"
 
 
+class CantInvitePrivateChat(CommandError):
+    code = "cant_invite_to_private_chat"
+    http_status = 422
+
+
+class UserAlreadyInChat(CommandError):
+    code = "user_already_in_chat"
+    http_status = 409
+
+
 class NotAuthor(CommandError):
     code = "user_not_author"
 

@@ -24,6 +24,16 @@ class PaginationPayload(BaseModel):
     per_page: int = Field(gt=0, le=10000,default=20)
 
 
+class AddMemberPayload(BaseModel):
+    chat_id: int
+    target_id: UUID
+
+
+class KickMemberPayload(BaseModel):
+    chat_id: int
+    target_id: UUID
+
+
 class LeaveChatPayload(BaseModel):
     chat_id: int
 
@@ -81,5 +91,6 @@ PAYLOAD_SCHEMAS = {
     CommandType.DELETE_MESSAGE: DeleteMessagePayload,
     CommandType.EDIT_MESSAGE: EditMessagePayload,
     CommandType.CREATE_CHAT: CreateChatPayload,
-    CommandType.LEAVE_CHAT: LeaveChatPayload
+    CommandType.LEAVE_CHAT: LeaveChatPayload,
+    CommandType.ADD_USER_TO_CHAT: AddMemberPayload
 }

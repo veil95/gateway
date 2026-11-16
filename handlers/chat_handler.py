@@ -20,7 +20,13 @@ class ChatHandler:
         return {"type": "chat_created_confirmed", "payload": message}
 
     async def add_user(self, user_id: str, payload: dict):
-        pass
+        response = await self.chat_client.add_user_to_chat(user_id=user_id, payload=payload)
+        message = response
+        event = Event(type="user_add", payload=message)
+        offline_users = await self.broadcaster.broadcast_to_members(user_id=user_id,
+                                                                    event=event,
+                                                                    members=response["members"])
+        return {"type": "user_add_confirmed", "payload": message}
 
     async def kick_user(self, user_id: str, payload: dict):
         pass

@@ -1,6 +1,6 @@
 import httpx
 from errors import ChatServiceUnavailable, NotInChat, MessageNotFound, NotAuthor, ChatNotFound, PermissionDenied
-from errors import InternalError, UserNotFound
+from errors import InternalError, UserNotFound, UserAlreadyInChat, CantInvitePrivateChat
 import logging
 
 
@@ -180,5 +180,29 @@ class ChatClient:
             raise ChatNotFound
         if response.status_code == 403:
             raise NotInChat
+        else:
+            raise ChatServiceUnavailable
+
+    async def add_user_to_chat(self, user_id: str, payload: dict):
+        response = await self._make_request(
+            method="POST",
+            url=f"/api/chats/{payload["chat_id"]}/members/",
+            headers={
+                "X-User-Id": user_id
+            },
+            json={
+                "chat_id": payload["chat_id"],
+                "user_id": payload["target_id"]
+            }
+        )
+
+        if response.is_success:
+            return response.json()
+        if response.status_code == 404:
+            raise UserNotFound
+        if response.status_code == 422:
+            raise CantInvitePrivateChat
+        if response.status_code == 409:
+            raise UserAlreadyInChat
         else:
             raise ChatServiceUnavailable
