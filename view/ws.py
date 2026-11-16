@@ -29,31 +29,33 @@ async def websocket_endpoint(websocket: WebSocket, connection_manager: Connectio
     try:
         while True:
             try:
-                data = await websocket.receive_json()
-                envelope = Envelope.model_validate(data)
+                try:
+                    data = await websocket.receive_json()
+                except json.JSONDecodeError:
+                    error = ProtocolError(
+                        error=ErrorBody(code="invalid_json", message="invalid json, value error or jsondecodeerror lox")
+                    )
+                    await websocket.send_json(error.model_dump(mode="json"))
+                    continue
+                try:
+                    envelope = Envelope.model_validate(data)
+                except ValidationError:
+                    error = ProtocolError(error=ErrorBody(code="invalid_envelope",
+                                                          message="invalid envelope from front, снова прислать херь мне"))
+                    await websocket.send_json(error.model_dump(mode="json"))
+                    continue
                 result = await dispatcher.handle(user_id, envelope)
                 if result is not None:
                     response = Response(type=result["type"], request_id=envelope.request_id,
                                         payload=result["payload"])
                     await websocket.send_json(response.model_dump(mode="json"))
-            except ValidationError:
-                error = ProtocolError(error=ErrorBody(code="invalid_envelope",
-                                                      message="invalid envelope from front, снова прислать херь мне"))
-                await websocket.send_json(error.model_dump(mode="json"))
-                continue
-            except json.JSONDecodeError:
-                error = ProtocolError(
-                    error=ErrorBody(code="invalid_json", message="invalid json, value error or jsondecodeerror lox")
-                )
-                await websocket.send_json(error.model_dump(mode="json"))
-                continue
             except CommandError as exc:
                 error = ErrorResponse(
                     request_id=envelope.request_id,
                     error=ErrorBody(code=exc.code, message="broooooo xyety prislal")
                 )
                 await websocket.send_json(error.model_dump(mode="json"))
-
+                continue
             except FatalError as exc:
                 error = ErrorResponse(
                     request_id=envelope.request_id,
@@ -62,8 +64,8 @@ async def websocket_endpoint(websocket: WebSocket, connection_manager: Connectio
                 await websocket.send_json(error.model_dump(mode="json"))
                 await websocket.close(exc.close_code)
                 return
-            except WebSocketDisconnect:
-                break
+    except WebSocketDisconnect:
+        pass
     finally:
         connection_manager.disconnect(user_id, websocket)
 
